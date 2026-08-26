@@ -1,0 +1,205 @@
+---
+layout: default
+title: "Add Record"
+---
+
+<h1 class="page-header">
+  <i class="bi bi-plus-circle me-2"></i>Add a Record
+</h1>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <p class="text-muted mb-4">
+          Fill in the details below. Copy the generated YAML and add it to
+          <code>_data/records.yml</code> in your repository.
+        </p>
+
+        <form id="addForm" novalidate>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="fTitle">Album Title <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="fTitle" required placeholder="e.g. Dark Side of the Moon" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="fArtist">Artist <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="fArtist" required placeholder="e.g. Pink Floyd" />
+            <div id="artistSuggestions" class="list-group mt-1 position-absolute z-3 w-100" style="max-width:400px;"></div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="fYear">Release Year</label>
+              <input type="number" class="form-control" id="fYear" min="1900" max="2099" placeholder="e.g. 1973" />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="fGenre">Genre</label>
+              <input type="text" class="form-control" id="fGenre" placeholder="e.g. Progressive Rock" />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="fNotes">Notes</label>
+            <textarea class="form-control" id="fNotes" rows="2"
+                      placeholder="Pressing info, inserts, purchase notes…"></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="fCover">Cover Image URL</label>
+            <div class="input-group">
+              <input type="url" class="form-control" id="fCover" placeholder="https://…" />
+              <button type="button" class="btn btn-outline-secondary" id="fetchCoverBtn">
+                <i class="bi bi-search me-1"></i>Find Artwork
+              </button>
+            </div>
+            <div class="form-text" id="coverStatus"></div>
+            <img id="coverPreview" class="d-none mt-2 rounded border" width="100" height="100"
+                 style="object-fit:cover;" alt="Cover preview" />
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-code-slash me-1"></i>Generate YAML
+            </button>
+            <button type="button" class="btn btn-outline-secondary" id="resetBtn">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div id="yamlOutput" class="d-none mt-4">
+      <h5 class="mb-2">Generated YAML</h5>
+      <p class="text-muted small mb-2">
+        Copy this block and append it to <code>_data/records.yml</code>.
+      </p>
+      <div class="position-relative">
+        <pre class="bg-dark text-light rounded p-3 small" id="yamlPre" style="white-space:pre-wrap;"></pre>
+        <button class="btn btn-sm btn-outline-light position-absolute top-0 end-0 m-2"
+                id="copyBtn"><i class="bi bi-clipboard"></i> Copy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Artist autocomplete from existing records
+  const artistInput = document.getElementById('fArtist');
+  const suggestions = document.getElementById('artistSuggestions');
+  const existingArtists = [...new Set(window.RECORDS.map(r => r.artist))].sort();
+
+  artistInput.addEventListener('input', () => {
+    const q = artistInput.value.toLowerCase();
+    suggestions.innerHTML = '';
+    if (!q) return;
+    const matches = existingArtists.filter(a => a.toLowerCase().includes(q)).slice(0, 5);
+    matches.forEach(name => {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'list-group-item list-group-item-action py-1 small';
+      item.textContent = name;
+      item.addEventListener('click', () => {
+        artistInput.value = name;
+        suggestions.innerHTML = '';
+      });
+      suggestions.appendChild(item);
+    });
+  });
+  document.addEventListener('click', e => {
+    if (!artistInput.contains(e.target)) suggestions.innerHTML = '';
+  });
+
+  function slugify(str) {
+    return str.toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim().replace(/\s+/g, '-');
+  }
+
+  function escapeYaml(str) {
+    if (!str) return '""';
+    if (str.includes('"') || str.includes("'") || str.includes(':') || str.includes('#')) {
+      return `"${str.replace(/"/g, '\\"')}"`;
+    }
+    return str;
+  }
+
+  document.getElementById('addForm').addEventListener('submit', e => {
+    e.preventDefault();
+    const title  = document.getElementById('fTitle').value.trim();
+    const artist = document.getElementById('fArtist').value.trim();
+    if (!title || !artist) return;
+
+    const id        = slugify(artist) + '-' + slugify(title);
+    const year      = document.getElementById('fYear').value.trim();
+    const genre     = document.getElementById('fGenre').value.trim();
+    const notes     = document.getElementById('fNotes').value.trim();
+    const cover     = document.getElementById('fCover').value.trim();
+
+    const yaml = [
+      `- id: ${id}`,
+      `  title: ${escapeYaml(title)}`,
+      `  artist: ${escapeYaml(artist)}`,
+      genre     ? `  genre: ${escapeYaml(genre)}`         : `  genre: ""`,
+      year      ? `  year: ${year}`                       : `  year: ""`,
+      notes     ? `  notes: ${escapeYaml(notes)}`         : `  notes: ""`,
+      cover     ? `  cover: ${escapeYaml(cover)}`         : `  cover: ""`,
+    ].join('\n');
+
+    document.getElementById('yamlPre').textContent = yaml;
+    document.getElementById('yamlOutput').classList.remove('d-none');
+    document.getElementById('yamlOutput').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // Look up official cover art via the iTunes Search API (free, no key required)
+  const coverInput   = document.getElementById('fCover');
+  const coverStatus  = document.getElementById('coverStatus');
+  const coverPreview = document.getElementById('coverPreview');
+
+  function showPreview(url) {
+    if (url) {
+      coverPreview.src = url;
+      coverPreview.classList.remove('d-none');
+    } else {
+      coverPreview.classList.add('d-none');
+    }
+  }
+  coverInput.addEventListener('input', () => showPreview(coverInput.value.trim()));
+
+  document.getElementById('fetchCoverBtn').addEventListener('click', async () => {
+    const title  = document.getElementById('fTitle').value.trim();
+    const artist = document.getElementById('fArtist').value.trim();
+    if (!title || !artist) {
+      coverStatus.textContent = 'Enter an artist and album title first.';
+      return;
+    }
+    coverStatus.textContent = 'Searching…';
+    try {
+      const term = encodeURIComponent(`${artist} ${title}`);
+      const res  = await fetch(`https://itunes.apple.com/search?term=${term}&entity=album&limit=1`);
+      const data = await res.json();
+      if (data.resultCount > 0) {
+        const art = data.results[0].artworkUrl100.replace('100x100bb', '600x600bb');
+        coverInput.value = art;
+        showPreview(art);
+        coverStatus.textContent = 'Found via iTunes — double-check it\'s the right pressing.';
+      } else {
+        coverStatus.textContent = 'No artwork found. Paste an image URL manually.';
+      }
+    } catch (err) {
+      coverStatus.textContent = 'Lookup failed. Paste an image URL manually.';
+    }
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    document.getElementById('addForm').reset();
+    document.getElementById('yamlOutput').classList.add('d-none');
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const text = document.getElementById('yamlPre').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+      setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy'; }, 2000);
+    });
+  });
+});
+</script>

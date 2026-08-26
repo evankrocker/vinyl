@@ -1,0 +1,16 @@
+title: Vinyl Collection
+description: My personal vinyl record collection
+baseurl: "/vinyl"
+url: "https://evankrocker.github.io"
+
+plugins:
+  - jekyll-feed
+
+markdown: kramdown
+theme: null
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor

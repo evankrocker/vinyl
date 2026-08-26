@@ -1,0 +1,155 @@
+:root {
+  --vinyl-dark: #1a1a2e;
+  --vinyl-accent: #e94560;
+  --vinyl-groove: #16213e;
+  --vinyl-label: #f5a623;
+}
+
+body {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+/* Navbar */
+.navbar-brand {
+  letter-spacing: 0.5px;
+  font-size: 1.25rem;
+}
+.navbar.bg-dark {
+  background-color: var(--vinyl-dark) !important;
+}
+.nav-link.active {
+  color: var(--vinyl-label) !important;
+  font-weight: 600;
+}
+
+/* Page headers */
+.page-header {
+  border-bottom: 3px solid var(--vinyl-accent);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Sortable table headers */
+th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+th[data-sort]:hover {
+  background-color: #e9ecef;
+}
+th[data-sort] .sort-icon {
+  font-size: 0.75rem;
+  opacity: 0.4;
+  margin-left: 4px;
+}
+th[data-sort].asc .sort-icon::before  { content: "\F235"; font-family: "bootstrap-icons"; opacity: 1; }
+th[data-sort].desc .sort-icon::before { content: "\F229"; font-family: "bootstrap-icons"; opacity: 1; }
+th[data-sort]:not(.asc):not(.desc) .sort-icon::before { content: "\F128"; font-family: "bootstrap-icons"; }
+
+/* Album / Artist cards */
+.record-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: none;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08);
+}
+.record-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 18px rgba(0,0,0,.15);
+}
+.record-card .card-img-top {
+  height: 180px;
+  object-fit: cover;
+  background: var(--vinyl-groove);
+}
+
+/* Vinyl disc placeholder */
+.vinyl-placeholder {
+  width: 100%;
+  height: 180px;
+  background: var(--vinyl-groove);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vinyl-disc {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    #555 0%, #555 12%,
+    #222 12%, #222 14%,
+    #333 14%, #1a1a1a 100%
+  );
+  box-shadow: 0 0 0 4px #444, 0 0 0 8px #1a1a1a, 0 0 0 12px #333;
+  position: relative;
+}
+.vinyl-disc::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--vinyl-label);
+  box-shadow: 0 0 0 2px #c8841a;
+}
+
+/* Table thumbnail covers */
+.thumb-cover {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: var(--vinyl-groove);
+}
+.thumb-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+/* Stats page */
+.stat-card {
+  border-left: 4px solid var(--vinyl-accent);
+}
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--vinyl-dark);
+}
+
+/* Artist list */
+.artist-row {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.artist-row:hover {
+  background-color: #f0f4ff;
+}
+
+/* Search bar */
+#searchBox {
+  max-width: 320px;
+}
+
+/* Detail page */
+.detail-cover {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.detail-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c757d;
+  margin-bottom: 2px;
+}
+.detail-value {
+  font-size: 1.05rem;
+  font-weight: 500;
+}
